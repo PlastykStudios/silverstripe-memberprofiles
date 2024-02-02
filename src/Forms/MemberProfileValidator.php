@@ -8,6 +8,7 @@ use SilverStripe\Core\Convert;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\RequiredFields;
+use Symbiote\MemberProfiles\Extensions\MemberProfileExtension;
 
 /**
  * This validator provides the unique and required functionality for {@link MemberProfileField}s.
@@ -87,7 +88,7 @@ class MemberProfileValidator extends RequiredFields
 
                 // This ensures the existing member isn't the same as the current member, in case they're updating information.
 
-                if ($current = Member::currentUserID()) {
+                if ($current = MemberProfileExtension::currentUserID()) {
                     $existing = $existing->filter('ID:not', $current);
                 }
                 $emailOK = !$existing->first();
