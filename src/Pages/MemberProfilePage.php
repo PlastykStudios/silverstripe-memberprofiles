@@ -75,7 +75,7 @@ use Symbiote\MemberProfiles\Extensions\MemberProfileExtension;
 class MemberProfilePage extends Page
 {
 
-    private static $db = array (
+    private static $db = array(
         'ProfileTitle'             => 'Varchar(255)',
         'RegistrationTitle'        => 'Varchar(255)',
         'AfterRegistrationTitle'   => 'Varchar(255)',
@@ -100,7 +100,7 @@ class MemberProfilePage extends Page
         'PostRegistrationTarget' => SiteTree::class,
     );
 
-    private static $has_many = array (
+    private static $has_many = array(
         'Fields'   => MemberProfileField::class,
         'Sections' => MemberProfileFieldsSection::class
     );
@@ -115,13 +115,13 @@ class MemberProfilePage extends Page
         'Sections',
     ];
 
-    private static $many_many = array (
+    private static $many_many = array(
         'Groups'           => Group::class,
         'SelectableGroups' => Group::class,
         'ApprovalGroups'   => Group::class,
     );
 
-    private static $defaults = array (
+    private static $defaults = array(
         'ProfileTitle'             => 'Edit Profile',
         'RegistrationTitle'        => 'Register / Log In',
         'AfterRegistrationTitle'   => 'Registration Successful',
@@ -180,7 +180,8 @@ class MemberProfilePage extends Page
      */
     public function Link($action = null)
     {
-        if (!$action
+        if (
+            !$action
             && MemberProfileExtension::currentUserID()
             && !$this->AllowProfileEditing
             && $this->CanAddMembers()
@@ -266,24 +267,24 @@ class MemberProfilePage extends Page
                     _t(
                         'MemberProfiles.PUBLICPROFILEDISABLED',
                         'Public profiles are currently disabled, you can enable them ' .
-                        'in the "Settings" tab.'
+                            'in the "Settings" tab.'
                     )
                 ));
-                $fields->insertBefore($disabledNote, 'Sections');
+                $fields->insertBefore('Sections', $disabledNote);
             }
 
             $groups->setDescription(_t(
                 'MemberProfiles.GROUPSNOTE',
                 'Any users registering via this page will always be added to ' .
-                'these groups (if registration is enabled). Conversely, a member ' .
-                'must belong to these groups in order to edit their profile on ' .
-                'this page.'
+                    'these groups (if registration is enabled). Conversely, a member ' .
+                    'must belong to these groups in order to edit their profile on ' .
+                    'this page.'
             ));
 
             $selectable->setDescription(_t(
                 'MemberProfiles.SELECTABLENOTE',
                 'Users can choose to belong to these groups, if the  "Groups" field ' .
-                'is enabled in the "Fields" tab.'
+                    'is enabled in the "Fields" tab.'
             ));
 
             $fields->removeByName('Content', true);
@@ -301,7 +302,7 @@ class MemberProfilePage extends Page
             foreach ($contentFields as $type) {
                 $fields->addFieldToTab("Root.ContentBlocks", ToggleCompositeField::create(
                     "{$type}Toggle",
-                    _t('MemberProfiles.'.  strtoupper($type), FormField::name_to_label($type)),
+                    _t('MemberProfiles.' .  strtoupper($type), FormField::name_to_label($type)),
                     array(
                         TextField::create("{$type}Title", _t('MemberProfiles.TITLE', 'Title')),
                         $content = HtmlEditorField::create("{$type}Content", _t('MemberProfiles.CONTENT', 'Content'))
