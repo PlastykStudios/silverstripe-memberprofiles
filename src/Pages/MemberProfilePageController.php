@@ -84,7 +84,7 @@ class MemberProfilePageController extends PageController
             $session->set('MemberProfile.REDIRECT', $backURL);
         }
 
-        return Member::currentUser() ? $this->indexProfile() : $this->indexRegister();
+        return Security::getCurrentUser() ? $this->indexProfile() : $this->indexRegister();
     }
 
     /**
@@ -133,7 +133,7 @@ class MemberProfilePageController extends PageController
             ));
         }
 
-        $member = Member::currentUser();
+        $member = Security::getCurrentUser();
 
         foreach ($this->Groups() as $group) {
             if (!$member->inGroup($group)) {
@@ -193,8 +193,10 @@ class MemberProfilePageController extends PageController
             new MemberProfileValidator($this->Fields())
         );
 
-        if (class_exists(FormSpamProtectionExtension::class)
-            && $form->hasExtension(FormSpamProtectionExtension::class)) {
+        if (
+            class_exists(FormSpamProtectionExtension::class)
+            && $form->hasExtension(FormSpamProtectionExtension::class)
+        ) {
             $form->enableSpamProtection();
         }
         $this->extend('updateRegisterForm', $form);
@@ -242,7 +244,7 @@ class MemberProfilePageController extends PageController
      */
     public function afterregistration()
     {
-        return array (
+        return array(
             'Title'   => $this->obj('AfterRegistrationTitle'),
             'Content' => $this->obj('AfterRegistrationContent')
         );
@@ -261,7 +263,7 @@ class MemberProfilePageController extends PageController
             new FieldList(
                 new FormAction('save', _t('MemberProfiles.SAVE', 'Save'))
             ),
-            new MemberProfileValidator($this->Fields(), Member::currentUser())
+            new MemberProfileValidator($this->Fields(), Security::getCurrentUser())
         );
         $this->extend('updateProfileForm', $form);
         return $form;
@@ -441,12 +443,14 @@ class MemberProfilePageController extends PageController
      */
     public function confirm(HTTPRequest $request)
     {
-        if ($this->EmailType !== 'Confirmation' &&
-            $this->EmailType !== 'Validation') {
+        if (
+            $this->EmailType !== 'Confirmation' &&
+            $this->EmailType !== 'Validation'
+        ) {
             return $this->httpError(400, 'No confirmation required.');
         }
 
-        $currentMember = Member::currentUser();
+        $currentMember = Security::getCurrentUser();
         $id = (int)$request->param('ID');
         $key = $request->getVar('key');
 
@@ -463,8 +467,10 @@ class MemberProfilePageController extends PageController
             ));
         }
 
-        if (!$id ||
-            !$key) {
+        if (
+            !$id ||
+            !$key
+        ) {
             return $this->httpError(404);
         }
 
@@ -475,7 +481,7 @@ class MemberProfilePageController extends PageController
          */
         $member = DataObject::get_by_id(Member::class, $id);
         if (!$member) {
-            return $this->invalidRequest('Member #'.$id.' does not exist.');
+            return $this->invalidRequest('Member #' . $id . ' does not exist.');
         }
         if (!$member->NeedsValidation) {
             // NOTE(Jake): 2018-05-03
@@ -484,10 +490,10 @@ class MemberProfilePageController extends PageController
             // Email Setting 'Confirmation' rather than 'Validation' and you didn't
             // edit the original Email template to not include the copy about confirmation.
             //
-            return $this->invalidRequest('Member #'.$id.' does not need validation.');
+            return $this->invalidRequest('Member #' . $id . ' does not need validation.');
         }
         if (!$member->ValidationKey) {
-            return $this->invalidRequest('Member #'.$id.' does not have a validation key.');
+            return $this->invalidRequest('Member #' . $id . ' does not have a validation key.');
         }
         if ($member->ValidationKey !== $key) {
             return $this->invalidRequest('Validation key does not match.');
@@ -533,7 +539,7 @@ class MemberProfilePageController extends PageController
             //
             // Only expose additional information in 'dev' mode.
             //
-            $additionalText .= ' '.$debugText;
+            $additionalText .= ' ' . $debugText;
         }
 
         $this->getResponse()->setStatusCode(500);
@@ -542,7 +548,7 @@ class MemberProfilePageController extends PageController
             'Content' => _t(
                 'MemberProfiles.ERRORCONFIRMATION',
                 'An unexpected error occurred.'
-            ).$additionalText,
+            ) . $additionalText,
         ];
     }
 
@@ -587,8 +593,10 @@ class MemberProfilePageController extends PageController
         // sending an email to the member.
         if ($this->RequireApproval) {
             $groups = $this->ApprovalGroups();
-            if (!$groups ||
-                $groups->count() == 0) {
+            if (
+                !$groups ||
+                $groups->count() == 0
+            ) {
                 // If nothing is configured, fallback to ADMIN
                 $groups = Permission::get_groups_by_permission('ADMIN');
             }
@@ -644,14 +652,14 @@ class MemberProfilePageController extends PageController
             switch ($this->EmailType) {
                 case 'None':
                     // Does not require anything
-                break;
+                    break;
 
                 case 'Confirmation':
                 case 'Validation':
                     // Must activate themselves via the confirmation email
                     $email = MemberConfirmationEmail::create($this->data(), $member);
                     $email->send();
-                break;
+                    break;
             }
         }
 
@@ -669,8 +677,8 @@ class MemberProfilePageController extends PageController
         $fields        = new FieldList();
 
         // depending on the context, load fields from the current member
-        if (Member::currentUser() && $context != 'Add') {
-            $memberFields = Member::currentUser()->getMemberFormFields();
+        if (Security::getCurrentUser() && $context != 'Add') {
+            $memberFields = Security::getCurrentUser()->getMemberFormFields();
         } else {
             $memberFields = singleton(Member::class)->getMemberFormFields();
         }
@@ -680,7 +688,8 @@ class MemberProfilePageController extends PageController
             $context = 'Registration';
         }
 
-        if ($this->AllowProfileViewing
+        if (
+            $this->AllowProfileViewing
             && $profileFields->find('PublicVisibility', 'MemberChoice')
         ) {
             $fields->push(new LiteralField(
@@ -727,8 +736,10 @@ class MemberProfilePageController extends PageController
                 $field->setDescription($profileField->Note);
             }
 
-            if ($context === 'Registration' &&
-                $profileField->DefaultValue) {
+            if (
+                $context === 'Registration' &&
+                $profileField->DefaultValue
+            ) {
                 $field->setValue($profileField->DefaultValue);
             }
 
@@ -737,7 +748,7 @@ class MemberProfilePageController extends PageController
             }
 
             $canSetVisibility = (
-                   $this->AllowProfileViewing
+                $this->AllowProfileViewing
                 && $profileField->PublicVisibility != 'Hidden'
             );
             if ($canSetVisibility) {
