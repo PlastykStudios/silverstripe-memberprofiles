@@ -11,6 +11,8 @@ use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\ValidationResult;
+use SilverStripe\Security\Security;
+
 
 /**
  * Adds validation fields to the Member object, as well as exposing the user's
@@ -154,5 +156,14 @@ class MemberProfileExtension extends DataExtension
             ))
             ));
         }
+    }
+
+    public static function currentUserID()
+    {
+        $member = Security::getCurrentUser();
+        if ($member) {
+            return $member->ID;
+        }
+        return 0;
     }
 }
