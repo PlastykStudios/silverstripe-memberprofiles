@@ -33,6 +33,7 @@ use SilverStripe\Forms\TreeDropdownField;
 use SilverStripe\ORM\HasManyList;
 use SilverStripe\ORM\UnsavedRelationList;
 use SilverStripe\ORM\ValidationResult;
+use Symbiote\MemberProfiles\Extensions\MemberProfileExtension;
 
 /**
  * A MemberProfilePage allows the administratior to set up a page with a subset of the
@@ -180,7 +181,7 @@ class MemberProfilePage extends Page
     public function Link($action = null)
     {
         if (!$action
-            && Member::currentUserID()
+            && MemberProfileExtension::currentUserID()
             && !$this->AllowProfileEditing
             && $this->CanAddMembers()
         ) {
