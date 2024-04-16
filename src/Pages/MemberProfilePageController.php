@@ -723,7 +723,7 @@ class MemberProfilePageController extends PageController
             }
 
             if ($name === 'Password') {
-                Requirements::javascript("silverstripe/admin: thirdparty/jquery/jquery.js");
+                Requirements::javascript("symbiote/silverstripe-memberprofiles: client/javascript/jquery.min.js");
                 Requirements::javascript("symbiote/silverstripe-memberprofiles: client/javascript/ConfirmedPasswordField.js");
             }
 
